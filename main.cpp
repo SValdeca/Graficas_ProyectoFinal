@@ -14,74 +14,97 @@ int refreshMills = 15;        // refresh interval in milliseconds [NEW]
 static const double PI = 3.141592654;
 /* Initialize OpenGL Graphics */
 void initGL() {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Set background color to black and opaque
-	glClearDepth(1.0f);                   // Set background depth to farthest
-	glEnable(GL_DEPTH_TEST);   // Enable depth testing for z-culling
-	glDepthFunc(GL_LEQUAL);    // Set the type of depth-test
-	glShadeModel(GL_SMOOTH);   // Enable smooth shading
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
-}
-void anillo(double hg, double hc, double rg, double rc, double s) {
-	//hg=altura del circulo grande
-	//hc=altura del cirgulo chico
-	//rg=radio del criculo grande
-	//rc=radio del circulo chico
-	//s=saltos de angulo en cada iteracion
-	glBegin(GL_QUADS);
-	for (double j = 0; j < 2 * PI + s; j = j + s) {
-		glVertex3f(rg*sin(j + s), rg*cos(j + s), hg);
-		glVertex3f(rg*sin(j), rg*cos(j), hg);
-		glVertex3f(rc*sin(j), rc*cos(j), hc);
-		glVertex3f(rc*sin(j + s), rc*cos(j + s), hc);
-	}
-	glEnd();
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
+	glClearDepth(1.0f);                  
+	glEnable(GL_DEPTH_TEST);   
+	glDepthFunc(GL_LEQUAL);    
+
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  
+	glEnable(GL_LINE_SMOOTH);
+	glEnable(GL_POLYGON_SMOOTH);
+	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glShadeModel(GL_SMOOTH);
+
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+	glEnable(GL_LIGHT1);
+
+	GLfloat mat_ambient[] = { 0.1, 0.1, 0.1, 0.15 };
+	GLfloat mat_diffuse[] = { 0.5, 0.95, 0.8, 0.2 };
+	GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+	GLfloat mat_emission[] = { 0.0, 0.0, 0.0, 0.3 };
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
+	glColorMaterial(GL_FRONT_AND_BACK, GL_EMISSION);
+	glEnable(GL_COLOR_MATERIAL);
+	
 }
 /* Handler for window-repaint event. Called back when the window first appears and
    whenever the window needs to be re-painted. */
+double color = 0;
+bool cambio = true;
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
 	glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
 
-	// Render a color-cube consisting of 6 quads with different colors
 	glLoadIdentity();                 // Reset the model-view matrix
 	glTranslatef(0.0, 0.0f, -7.0f);  // Move right and into the screen
 	glRotatef(angleCube, 1.0f, 1.0f, 1.0f);  // Rotate about (1,1,1)-axis [NEW]
 
-	                // Begin drawing the color cube with 6 quads
-	   // Top face (y = 1.0f)
-	   // Define vertices in counter-clockwise (CCW) order with normal pointing out
 	glColor3f(1.0f, 0, 0);
 	double radio = 0;
 	double altura = 0;
 	double incH = .1;
 	double incR = .08;
 	double s = .05;
+	GLUquadric*quad = gluNewQuadric();
+
 	for (altura = 0; altura <= 1; altura = altura + incH) {
-		anillo(altura + (incH / 2), altura, radio+(incR/2), radio, s);
+		gluCylinder(quad, radio, radio + (incR / 2), (incH / 2), 100, 100);
+		glTranslatef(0, 0, incH);
 		radio = radio + incR;
 	}
+	
 	glColor3f(0, 1.0f, 0);
 	for (altura = 1; altura >= 0; altura = altura - incH) {
-		anillo(altura + (incH / 2), altura, radio, radio + (incR / 2), s);
+		//anillo(altura + (incH / 2), altura, radio, radio + (incR / 2), s);
+		gluCylinder(quad, radio + (incR / 2), radio, (incH / 2), 100, 100);
+		glTranslatef(0, 0, -incH);
 		radio = radio + incR;
 	}
 	glColor3f(0, 0, 1.0f);
 	for (altura = 0; altura <= 1; altura = altura + incH) {
-		anillo(altura + (incH / 2), altura, radio + (incR / 2), radio, s);
+		//anillo(altura + (incH / 2), altura, radio + (incR / 2), radio, s);
+		gluCylinder(quad, radio, radio + (incR / 2), (incH / 2), 100, 100);
+		glTranslatef(0, 0, incH);
 		radio = radio + incR;
 	}
-	double incA=.07;
-	glColor3f(0.5f, 0.5f, 0.5f);
-	for (double ang = 0; ang < PI / 2; ang=ang + incA) {
-		anillo(-radio*sin(ang)+1+incH, -radio*sin(ang+(incA/2))+1+incH, radio * cos(ang), radio * cos(ang + (incA / 2)), s);
-		cout << ang<<"\n";
-	}
 
+
+	glColor4f(color, 0, 1-color, 0.3);
+	glutSolidSphere(radio, 100, 100);
 	glutSwapBuffers();  // Swap the front and back frame buffers (double buffering)
 
+	if (cambio) {
+		color += .005;
+		cambio = (color < 1);
+	}
+	else{
+		color -= .005;
+		cambio = (color <= 0);
+	}
 	// Update the rotational angle after each refresh [NEW]
-	anglePyramid += 0.2f;
 	angleCube -= 0.15f;
+	
 }
 
 /* Called back when timer expired [NEW] */
@@ -110,6 +133,8 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
 /* Main function: GLUT runs as a console application starting at main() */
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);            // Initialize GLUT
+	glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+	glEnable(GL_BLEND);
 	glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
 	glutInitWindowSize(640, 480);   // Set the window's initial width & height
 	glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
