@@ -2,29 +2,78 @@
 #include "GL/glut.h"
 #include "math.h"
 #include <iostream>
-using std::cout;
-using std::cin;
-#pragma comment(lib, "glut32.lib")
 #define WINDOW_TITLE "Project"
 
 char title[] = "Proyecto final";
-GLfloat anglePyramid = 0.0f;  // Rotational angle for pyramid [NEW]
-GLfloat angleCube = 0.0f;     // Rotational angle for cube [NEW]
-int refreshMills = 15;        // refresh interval in milliseconds [NEW]
 static const double PI = 3.141592654;
 /* Initialize OpenGL Graphics */
 void initGL() {
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); 
-	glClearDepth(1.0f);                  
-	glEnable(GL_DEPTH_TEST);   
-	glDepthFunc(GL_LEQUAL);    
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearDepth(1.0f);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  
+	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_POLYGON_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+}
+/* Handler for window-repaint event. Called back when the window first appears and
+   whenever the window needs to be re-painted. */
+double color = 0;
+bool cambio = true;
+GLfloat w, h, phi = 0, theta = 0, radio = 6, movX, movY, movZ;
+GLfloat phi2=0, theta2=0, r=1, posX = r * cos(phi2) * sin(theta2), posY = r * sin(phi2) * sin(theta2), posZ = r * cos(theta2);
 
+void pintaFigura() {
+	
+	glColor3f(1.0f, 0, 0);
+	double radio = 0;
+	double altura = 0;
+	double incH = .1;
+	double incR = .08;
+	double s = .05;
+	GLUquadric* quad = gluNewQuadric();
+
+	for (altura = 0; altura <= 1; altura = altura + incH) {
+		gluCylinder(quad, radio, radio + (incR / 2), (incH / 2), 100, 100);
+		glTranslatef(0, 0, incH);
+		radio = radio + incR;
+	}
+
+	glColor3f(0, 1.0f, 0);
+	for (altura = 1; altura >= 0; altura = altura - incH) {
+		//anillo(altura + (incH / 2), altura, radio, radio + (incR / 2), s);
+		gluCylinder(quad, radio + (incR / 2), radio, (incH / 2), 100, 100);
+		glTranslatef(0, 0, -incH);
+		radio = radio + incR;
+	}
+	glColor3f(0, 0, 1.0f);
+	for (altura = 0; altura <= 1; altura = altura + incH) {
+		//anillo(altura + (incH / 2), altura, radio + (incR / 2), radio, s);
+		gluCylinder(quad, radio, radio + (incR / 2), (incH / 2), 100, 100);
+		glTranslatef(0, 0, incH);
+		radio = radio + incR;
+	}
+
+
+	glColor4f(color, 0, 1 - color, 0.3);
+	glutSolidSphere(radio, 100, 100);
+	glutSwapBuffers();  // Swap the front and back frame buffers (double buffering)
+
+	if (cambio) {
+		color += .005;
+		cambio = (color < 1);
+	}
+	else {
+		color -= .005;
+		cambio = (color <= 0);
+	}
+
+}
+
+void luces() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -46,71 +95,76 @@ void initGL() {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat_emission);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_EMISSION);
 	glEnable(GL_COLOR_MATERIAL);
-	
 }
-/* Handler for window-repaint event. Called back when the window first appears and
-   whenever the window needs to be re-painted. */
-double color = 0;
-bool cambio = true;
+
 void display() {
+	luces();
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
 	glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
 
+
+	glViewport(0, 0, w, h);
 	glLoadIdentity();                 // Reset the model-view matrix
 	glTranslatef(0.0, 0.0f, -7.0f);  // Move right and into the screen
-	glRotatef(angleCube, 1.0f, 1.0f, 1.0f);  // Rotate about (1,1,1)-axis [NEW]
+	gluLookAt(posX, posY, posZ, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0);
+	pintaFigura();
 
-	glColor3f(1.0f, 0, 0);
-	double radio = 0;
-	double altura = 0;
-	double incH = .1;
-	double incR = .08;
-	double s = .05;
-	GLUquadric*quad = gluNewQuadric();
-
-	for (altura = 0; altura <= 1; altura = altura + incH) {
-		gluCylinder(quad, radio, radio + (incR / 2), (incH / 2), 100, 100);
-		glTranslatef(0, 0, incH);
-		radio = radio + incR;
-	}
-	
-	glColor3f(0, 1.0f, 0);
-	for (altura = 1; altura >= 0; altura = altura - incH) {
-		//anillo(altura + (incH / 2), altura, radio, radio + (incR / 2), s);
-		gluCylinder(quad, radio + (incR / 2), radio, (incH / 2), 100, 100);
-		glTranslatef(0, 0, -incH);
-		radio = radio + incR;
-	}
-	glColor3f(0, 0, 1.0f);
-	for (altura = 0; altura <= 1; altura = altura + incH) {
-		//anillo(altura + (incH / 2), altura, radio + (incR / 2), radio, s);
-		gluCylinder(quad, radio, radio + (incR / 2), (incH / 2), 100, 100);
-		glTranslatef(0, 0, incH);
-		radio = radio + incR;
-	}
-
-
-	glColor4f(color, 0, 1-color, 0.3);
-	glutSolidSphere(radio, 100, 100);
-	glutSwapBuffers();  // Swap the front and back frame buffers (double buffering)
-
-	if (cambio) {
-		color += .005;
-		cambio = (color < 1);
-	}
-	else{
-		color -= .005;
-		cambio = (color <= 0);
-	}
-	// Update the rotational angle after each refresh [NEW]
-	angleCube -= 0.15f;
-	
 }
 
+void display2() {
+	luces();
+
+	GLfloat movX = radio * cos(phi) * sin(theta);
+	GLfloat movY = radio * sin(phi) * sin(theta);
+	GLfloat movZ = radio * cos(theta);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+	glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
+
+	glViewport(0, 0, w, h);
+	glLoadIdentity();
+	gluLookAt(movX, movY, movZ, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0);
+	pintaFigura();
+
+
+	theta += 0.005;
+	phi += 0.005;
+
+}
+
+void inputTeclas(unsigned char key, int x, int y) {
+	switch (key) {
+		case  'a':
+			phi2 += .003;
+			theta += .003;
+		break;
+		case 's':
+			phi2 -= .003;
+			theta += .003;
+		break;
+		case  'w':
+			phi2 += .003;
+			theta -= .003;
+		break;
+		case 'd':
+			phi2 -= .003;
+			theta -= .003;
+		break;
+		case  'e':
+			r += 0.1;
+		break;
+		case 'q':
+			r -= 0.1;
+		break;
+	}
+
+	glutPostRedisplay();
+}
 /* Called back when timer expired [NEW] */
 void timer(int value) {
 	glutPostRedisplay();      // Post re-paint request to activate display()
-	glutTimerFunc(refreshMills, timer, 0); // next timer call milliseconds later
+	glutTimerFunc(1000/60, timer, 0); // next timer call milliseconds later
 }
 
 /* Handler for window re-size event. Called back when the window first appears and
@@ -121,7 +175,8 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
 	GLfloat aspect = (GLfloat)width / (GLfloat)height;
 
 	// Set the viewport to cover the new window
-	glViewport(0, 0, width, height);
+	w = (GLfloat)width;
+	h = (GLfloat)height;
 
 	// Set the aspect ratio of the clipping volume to match the viewport
 	glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
@@ -133,16 +188,31 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
 /* Main function: GLUT runs as a console application starting at main() */
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);            // Initialize GLUT
+
 	glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
 	glEnable(GL_BLEND);
 	glutInitDisplayMode(GLUT_DOUBLE); // Enable double buffered mode
 	glutInitWindowSize(640, 480);   // Set the window's initial width & height
-	glutInitWindowPosition(50, 50); // Position the window's initial top-left corner
+
+	glutInitWindowPosition(650, 50);
+	glutCreateWindow(title);
+	glutDisplayFunc(display2);       // Register callback handler for window re-paint event
+	glutReshapeFunc(reshape);
+
+	glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
+	glEnable(GL_BLEND);
+	glutInitDisplayMode(GLUT_DOUBLE);
+	glutInitWindowSize(640, 480);
+
+	glutInitWindowPosition(30, 50);
 	glutCreateWindow(title);          // Create window with the given title
 	glutDisplayFunc(display);       // Register callback handler for window re-paint event
-	glutReshapeFunc(reshape);       // Register callback handler for window re-size event
+	glutReshapeFunc(reshape);
+
+	glutKeyboardFunc(inputTeclas);
+
 	initGL();                       // Our own OpenGL initialization
-	glutTimerFunc(0, timer, 0);     // First timer call immediately [NEW]
+	glutTimerFunc(1000, timer, 0);     // First timer call immediately [NEW]
 	glutMainLoop();                 // Enter the infinite event-processing loop
 	return 0;
 }
