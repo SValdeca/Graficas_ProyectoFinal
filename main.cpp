@@ -24,7 +24,7 @@ void initGL() {
 double color = 0;
 bool cambio = true;
 GLfloat w, h, phi = 0, theta = 0, radio = 6, movX, movY, movZ;
-GLfloat phi2=0, theta2=0, r=1, posX = r * cos(phi2) * sin(theta2), posY = r * sin(phi2) * sin(theta2), posZ = r * cos(theta2);
+GLfloat phi2=0, theta2=0, r=3;
 
 void pintaFigura() {
 	
@@ -103,6 +103,7 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
 	glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
 
+	GLfloat posX = r * cos(phi2) * sin(theta2), posY = r * sin(phi2) * sin(theta2), posZ = r * cos(theta2);
 
 	glViewport(0, 0, w, h);
 	glLoadIdentity();                 // Reset the model-view matrix
@@ -135,27 +136,28 @@ void display2() {
 
 void inputTeclas(unsigned char key, int x, int y) {
 	switch (key) {
-		case  'a':
-			phi2 += .003;
-			theta += .003;
+		case  'a'://rotar en x
+			theta2 -= .01;
 		break;
-		case 's':
-			phi2 -= .003;
-			theta += .003;
+		case 's'://rotar en y
+			phi2 -= .01;
 		break;
-		case  'w':
-			phi2 += .003;
-			theta -= .003;
+		case  'w'://rotar en x
+			phi2 += .01;
 		break;
-		case 'd':
-			phi2 -= .003;
-			theta -= .003;
+		case 'd'://rotar en y
+			theta2 += .01;
 		break;
-		case  'e':
+		case  'e'://zoom in
 			r += 0.1;
 		break;
-		case 'q':
+		case 'q'://zoom out
 			r -= 0.1;
+		break;
+		case 'r': //activar la luz
+			glEnable(GL_LIGHT2);
+			GLfloat posL[] = { x, y, 0, 0.0f };
+			glLightfv(GL_LIGHT2,GL_SPECULAR,posL);
 		break;
 	}
 
