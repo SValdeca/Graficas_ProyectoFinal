@@ -41,7 +41,6 @@ void pintaFigura() {
 		glTranslatef(0, 0, incH);
 		radio = radio + incR;
 	}
-
 	glColor3f(0, 1.0f, 0);
 	for (altura = 1; altura >= 0; altura = altura - incH) {
 		//anillo(altura + (incH / 2), altura, radio, radio + (incR / 2), s);
@@ -69,12 +68,12 @@ void pintaFigura() {
 		color -= .005;
 		cambio = (color <= 0);
 	}
+
 }
 
 void luces() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 	glShadeModel(GL_SMOOTH);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
 	glEnable(GL_LIGHTING);
@@ -101,6 +100,7 @@ void display() {
 	glMatrixMode(GL_MODELVIEW);     // To operate on model-view matrix
 
 	GLfloat posX = r * cos(phi2) * sin(theta2), posY = r * sin(phi2) * sin(theta2), posZ = r * cos(theta2);
+
 	GLfloat movX = radio * cos(phi) * sin(theta);
 	GLfloat movY = radio * sin(phi) * sin(theta);
 	GLfloat movZ = radio * cos(theta);
@@ -111,6 +111,8 @@ void display() {
 	gluLookAt(posX, posY, posZ, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0);
 	pintaFigura();
 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
+	glMatrixMode(GL_MODELVIEW);
 	glViewport(w/3, 0, w, h);
 	glLoadIdentity();
 	gluLookAt(movX, movY, movZ, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0);
@@ -168,7 +170,6 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
 	w = (GLfloat)width;
 	h = (GLfloat)height;
 
-	// Set the aspect ratio of the clipping volume to match the viewport
 	glMatrixMode(GL_PROJECTION);  // To operate on the Projection matrix
 	glLoadIdentity();             // Reset
 	// Enable perspective projection with fovy, aspect, zNear and zFar
@@ -187,7 +188,6 @@ int main(int argc, char** argv) {
 	glutCreateWindow(title);
 	glutDisplayFunc(display);
 	glutReshapeFunc(reshape);
-
 	glutKeyboardFunc(inputTeclas);
 
 	initGL();                       // Our own OpenGL initialization
